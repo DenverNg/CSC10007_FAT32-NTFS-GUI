@@ -12,22 +12,24 @@ class Entry:
     @staticmethod
     def convert_attr_type(byte):
         attr_type = int.from_bytes(byte, 'little')
-        if attr_type == int('10', 16):
+        # Kiem tra thuoc tinh cua attribute
+        if attr_type == 0x10:
             return "StandardInformation"
-        if attr_type == int('30', 16):
+        elif attr_type == 0x30:
             return "FileName"
-        if attr_type == int('80', 16):
+        elif attr_type == 0x80:
             return "Data"
-        if attr_type == int('60', 16):
+        elif attr_type == 0x60:
             return "VolumeName"
-        if b'\xff' in byte:
+        elif b'\xff' in byte:
             return "End"
         return None
 
     @staticmethod
     def convert_nano_second(byte):
         nano_second = int.from_bytes(byte, 'little')
-        date = datetime.fromtimestamp((nano_second - WIN_EPOCH) // 10000000)
+        timestamp_seconds = (nano_second - WIN_EPOCH) // 10000000
+        date = datetime.fromtimestamp(timestamp_seconds)
         return str(date)
 
     @staticmethod
@@ -47,11 +49,11 @@ class Entry:
         return ret
 
     def __init__(self, entry_bytes):
-        self.magic = ''
-        self.attr_offset = 0
+        self.iden_sign = ''
+        self.start_offset_attr = 0
         self.is_using = None
         self.is_dir = False
-        self.used_size = 0
+        self.mft_used_size = 0
         self.allocated_size = 0
         self.id = -1
         self.create_time = ''
@@ -67,17 +69,17 @@ class Entry:
         self.sub_list = []
         self.str = ''
 
-        self.__parse_header_entry(entry_bytes)
+        self.__parse_header_mft_entry(entry_bytes)
         self.__parse_attr()
 
-    def __parse_header_entry(self, entry_bytes):
-        self.magic = entry_bytes[0:4].decode('utf-8')  # FILE || BAAD
-        self.attr_offset = int.from_bytes(entry_bytes[20:22], 'little')
+    def __parse_header_mft_entry(self, entry_bytes):
+        self.iden_sign = entry_bytes[0:4].decode('utf-8')  # FILE || BAAD
+        self.start_offset_attr = int.from_bytes(entry_bytes[20:22], 'little')
         self.is_using, self.is_dir = self.convert_status(entry_bytes[22:24])
-        self.used_size = int.from_bytes(entry_bytes[24:28], 'little')
+        self.mft_used_size = int.from_bytes(entry_bytes[24:28], 'little')
         self.allocated_size = int.from_bytes(entry_bytes[28:32], 'little')
         self.id = int.from_bytes(entry_bytes[44:48], 'little')
-        self.attr = entry_bytes[self.attr_offset:]
+        self.attr = entry_bytes[self.start_offset_attr:]
 
     def __parse_attr(self):
         while True:
