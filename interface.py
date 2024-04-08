@@ -1,6 +1,7 @@
 import os
 import customtkinter as ctk
 import tkinter as tk
+import mimetypes
 from tkextrafont import Font
 from PIL import Image, ImageTk
 from tkinter import ttk
@@ -19,8 +20,6 @@ class TreeFrame(ctk.CTkScrollableFrame):
         ttk.Style().configure('.', borderwidth=0, highlightthickness=0, relief='flat')
         self.style.configure('Treeview', rowheight=40, font=self.font,
                              borderwidth=0, highlightthickness=0, relief='ridge')
-        # self.style.layout('Treeview.Item', [('Treeitem.image', {'side': 'left', 'sticky': ''}), ('Treeitem.text', {'side': 'left', 'sticky': ''})])
-        # self.style.map('Treeview.Item', {'open': [('!disabled', '')], 'close': [('!disabled', '')]})
         super().__init__(master, width=width, height=height, fg_color='white')
         self.master = master
         self.tree = ttk.Treeview(self, height=height, show='tree')
@@ -28,33 +27,89 @@ class TreeFrame(ctk.CTkScrollableFrame):
 
         self.image_list = {
             'folder': self.render_picture("./assets/folder.png"),
+            'open_folder': self.render_picture("./assets/open-folder.png"),
             'document': self.render_picture("./assets/document.png"),
-            'disk': self.render_picture("./assets/hard-drive.png")
+            'disk': self.render_picture("./assets/hard-drive.png"),
+            'collapse': self.render_picture("./assets/collapse.png"),
+            'expand': self.render_picture("./assets/expand.png"),
+            'system': self.render_picture("./assets/system.png"), 
+            
+            'cpp':self.render_picture("./assets/icons/cpp.png"),
+            'css': self.render_picture("./assets/icons/css.png"),
+            'doc': self.render_picture("./assets/icons/doc.png"),
+            'exe': self.render_picture("./assets/icons/exe.png"),
+            'html': self.render_picture("./assets/icons/html.png"),
+            'jpg': self.render_picture("./assets/icons/jpg.png"),
+            'json': self.render_picture("./assets/icons/json.png"),
+            'ppt': self.render_picture("./assets/icons/ppt.png"),
+            'audio': self.render_picture("./assets/icons/mp3.png"),
+            'video': self.render_picture("./assets/icons/mp4.png"),
+            'ppt': self.render_picture("./assets/icons/ppt.png"),
+            'pdf': self.render_picture("./assets/icons/pdf.png"),
+            'text': self.render_picture("./assets/icons/txt.png"),
         }
 
         self.tree.tag_configure('folder', image=self.image_list['folder'])
+        self.tree.tag_configure('open_folder', image=self.image_list['open_folder'])
         self.tree.tag_configure('document', image=self.image_list['document'])
         self.tree.tag_configure('disk', image=self.image_list['disk'])
-        self.tree.tag_bind('folder', '<Double-1>', self.open_node)
+        self.tree.tag_configure('collapse', image=self.image_list['collapse'])
+        self.tree.tag_configure('expand', image=self.image_list['expand'])
+        self.tree.tag_configure('system', image=self.image_list['system'])
+        self.tree.tag_configure('cpp', image=self.image_list['cpp'])
+        self.tree.tag_configure('css', image=self.image_list['css'])
+        self.tree.tag_configure('doc', image=self.image_list['doc'])
+        self.tree.tag_configure('exe', image=self.image_list['exe'])
+        self.tree.tag_configure('html', image=self.image_list['html'])
+        self.tree.tag_configure('jpg', image=self.image_list['jpg'])
+        self.tree.tag_configure('json', image=self.image_list['json'])
+        self.tree.tag_configure('ppt', image=self.image_list['ppt'])
+        self.tree.tag_configure('audio', image=self.image_list['audio'])
+        self.tree.tag_configure('video', image=self.image_list['video'])
+        self.tree.tag_configure('pdf', image=self.image_list['pdf'])
+        self.tree.tag_configure('text', image=self.image_list['text'])
+        
+        # self.tree.tag_bind('folder', '<Double-1>', self.open_node)
         self.tree.tag_bind('disk', '<Double-1>', self.open_node)
         self.tree.tag_bind('document', '<Double-1>', self.open_node)
+        self.tree.tag_bind('folder', '<Double-1>', self.open_node)
+        self.tree.tag_bind('system', '<Double-1>', self.open_node)
+        self.tree.tag_bind('pdf', '<Double-1>', self.open_node)
+        self.tree.tag_bind('audio', '<Double-1>', self.open_node)
+        self.tree.tag_bind('video', '<Double-1>', self.open_node)
+        self.tree.tag_bind('doc', '<Double-1>', self.open_node)
+        self.tree.tag_bind('exe', '<Double-1>', self.open_node)
+        self.tree.tag_bind('html', '<Double-1>', self.open_node)
+        self.tree.tag_bind('css', '<Double-1>', self.open_node)
+        self.tree.tag_bind('cpp', '<Double-1>', self.open_node)
+        self.tree.tag_bind('jpg', '<Double-1>', self.open_node)
+        self.tree.tag_bind('json', '<Double-1>', self.open_node)
+        self.tree.tag_bind('ppt', '<Double-1>', self.open_node)
+        self.tree.tag_bind('text', '<Double-1>', self.open_node)
+        self.tree.bind('<Button-1>', self.toggle_node)
         self.configure_folders(folders)
+    
+    def toggle_node(self, event):
+        # Get the item ID of the clicked node
+        item_id = self.tree.identify_row(event.y)
+
+        # Check if the clicked item is expandable
+        if self.tree.tag_has('collapse', item_id):
+            # Change the tag from collapse to expand
+            self.tree.item(item_id, tags=('expand', 'open_folder'))
+        elif self.tree.tag_has('expand', item_id):
+            # Change the tag from expand to collapse
+            self.tree.item(item_id, tags=('collapse', 'folder'))
 
     @staticmethod
     def render_picture(path):
-        width = 16
+        width = 40
         img = Image.open(path)
         wpersent = (width/float(img.size[0]))
         height = int(float(img.size[1])*float(wpersent))
         img = img.resize((width, height), Image.LANCZOS)
         return ImageTk.PhotoImage(img)
-
-    def configure_folders(self, folders):
-        self.folders = folders
-        self.tree.delete(*self.tree.get_children())
-        for folder in self.folders:
-            self.fill_tree('', folder)
-
+    
     def fill_tree(self, parent, entry):
         stack = [(parent, entry)]
         while stack:
@@ -65,8 +120,45 @@ class TreeFrame(ctk.CTkScrollableFrame):
             if isinstance(entry, FAT32.FAT32) or isinstance(entry, NTFS.NTFS):
                 is_volume = True
             tag = 'disk'
+            # if not is_volume:
+            #     tag = 'folder' if entry.is_dir else 'document'
             if not is_volume:
-                tag = 'folder' if entry.is_dir else 'document'
+                if entry.is_dir:
+                    tag = 'folder'
+                else:
+                    mime_type, _ = mimetypes.guess_type(entry.get_name())
+                    if mime_type:
+                        main_type, sub_type = mime_type.split('/')
+                        if main_type == 'application' and sub_type == 'pdf':
+                            tag = 'pdf'
+                        elif main_type == 'audio' and sub_type in ['mp3', 'mpeg']:
+                            tag = 'audio'
+                        elif main_type == 'video' and sub_type == 'mp4':
+                            tag = 'video'
+                        elif main_type == 'application' and sub_type == 'msword':
+                            tag = 'doc'
+                        elif main_type == 'application' and sub_type == 'exe':
+                            tag = 'exe'
+                        elif main_type == 'text' and sub_type == 'html':
+                            tag = 'html'
+                        elif main_type == 'text' and sub_type == 'css':
+                            tag = 'css'
+                        elif main_type == 'text' and sub_type == 'x-c++src':
+                            tag = 'cpp'
+                        elif main_type == 'image' and sub_type == 'jpeg':
+                            tag = 'jpg'
+                        elif main_type == 'application' and sub_type == 'json':
+                            tag = 'json'
+                        elif main_type == 'application' and sub_type == 'vnd.ms-powerpoint':
+                            tag = 'ppt'
+                        elif main_type == 'text':
+                            tag = 'text'
+                        # Add more conditions for other file types as needed
+                    elif entry.get_name().startswith('$'):
+                        tag = 'system'
+                    else:
+                        tag = 'document'
+
             node = self.tree.insert(
                 parent=parent, index='end', text=entry.get_name(), open=False, tags=(tag,))
             # self.tree.item(node, image = img)
@@ -75,20 +167,13 @@ class TreeFrame(ctk.CTkScrollableFrame):
                 for child in reversed(entry.get_entry_list()):
                     stack.append((node, child))
 
-    def open_node(self, event):
-        node = event.widget.focus()
-        # if not self.tree.parent(node):
-        #   return
-        path = self.get_path(node)
-        if path is None:
-            return
-        info = self.fill_information(path)
-        # print(info)
-        self.master.insert_text(info)
+    def configure_folders(self, folders):
+        self.folders = folders
+        self.tree.delete(*self.tree.get_children())
+        for folder in self.folders:
+            self.fill_tree('', folder)
 
     def fill_information(self, path):
-        # if path[0] not in self.folders:
-        #     return 'not supported'
         partition = None
         for folder in self.folders:
             if folder.get_name() == path[0]:
@@ -121,6 +206,14 @@ class TreeFrame(ctk.CTkScrollableFrame):
         path.reverse()
         return path
 
+    def open_node(self, event):
+        node = event.widget.focus()
+        path = self.get_path(node)
+        if path is None:
+            return
+        info = self.fill_information(path)
+        self.master.insert_text(info)
+
 
 class InfoFrame(ctk.CTkFrame):
     def __init__(self, master, width, height, bg_colour):
@@ -147,25 +240,8 @@ class InfoFrame(ctk.CTkFrame):
         self.textbox.insert(index='end', text=text)
         self.textbox.configure(state='disabled')
 
-# class TabView(ctk.CTkTabview):
-#     def __init__(self, master, width, height, bg_colour):
-#         super().__init__(master)
-#
-#         # create tabs
-#         self.add("Home")
-#         self.add("Menu")
-#
-#         # add widgets on tabs
-#         # self.label = ctk.CTkLabel(master=self.tab("Home"))
-#         self.configure(width=width,
-#                        height=height,
-#                        fg_color=bg_colour)
-#         # self.pack(side=ctk.TOP)
-
-
 def rgb_hack(rgb):
     return "#%02x%02x%02x" % rgb
-
 
 class App(ctk.CTk):
     def __init__(self):
@@ -173,7 +249,7 @@ class App(ctk.CTk):
         self.geometry("1080x720")
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
-        self.title("DiskReader")
+        self.title("22127007_22127085_Lab02")
 
         self.devices = get_usb()
         self.current_choice = None
@@ -186,7 +262,7 @@ class App(ctk.CTk):
 
         self.tree_geometry = {
             "width": 500,
-            "height": 720 - 40
+            "height": 800
         }
         self.container = ctk.CTkFrame(self)
         self.combox = ctk.CTkOptionMenu(master=self.container,
