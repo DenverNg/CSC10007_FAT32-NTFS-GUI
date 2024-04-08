@@ -26,10 +26,10 @@ class Entry:
         bytes = ''.join("{:08b}".format(x) for x in bytes[::-1])
         try:
             hour = int(bytes[0:5], 2)
-            minute = int(bytes[5:12], 2)
-            sec = int(bytes[11:18], 2) if is_create_time else int(
-                bytes[11:17], 2)
-            milli_sec = int(bytes[17: 25], 2) if is_create_time else 0
+            minute = int(bytes[5:11], 2)
+            sec = int(bytes[11:17], 2) #if is_create_time else int(
+                #bytes[11:17], 2)
+            milli_sec = int(bytes[17: 25], 2) #if is_create_time else 0
             return f"{hour}:{minute}:{sec}:{milli_sec}"
         except ValueError:
             return "Invalid time"
