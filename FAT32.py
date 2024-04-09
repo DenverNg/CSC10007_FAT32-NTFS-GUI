@@ -125,17 +125,27 @@ class Entry:
     def get_info(self):
         if self.is_dir:
             # Neu la thu muc thi data_real_size se bang tong cua children
-            children_size = sum(child.entry_size for child in self.sub_list)
-            size_info = f"Size: {children_size}\n"
+            size_bytes = sum(child.entry_size for child in self.sub_list)
         else:
-            size_info = f"Size: {self.entry_size}\n"
-        prop = (
-            f"Name: {self.get_name()}\n"
-            f"Attribute: {self.entry_type}\n"
-            f"Date created: {self.date_created}\n"
-            f"Time created: {self.time_created}\n"
-            f"{size_info}"
-        )
+            size_bytes = self.entry_size
+        size_gb = size_bytes / 1024**3
+        if size_gb < 1:
+            size_mb = size_bytes / 1024**2
+            prop = (
+                f"Name: {self.get_name()}\n"
+                f"Attribute: {self.entry_type}\n"
+                f"Date created: {self.date_created}\n"
+                f"Time created: {self.time_created}\n"
+                f"Size: {size_bytes} bytes or {size_mb:.2f} MB\n"
+            )
+        else:
+            prop = (
+                f"Name: {self.get_name()}\n"
+                f"Attribute: {self.entry_type}\n"
+                f"Date created: {self.date_created}\n"
+                f"Time created: {self.time_created}\n"
+                f"Size:{size_bytes} bytes or {size_gb:.2f} GB\n"
+            )
         return prop
 
 

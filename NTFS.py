@@ -23,8 +23,6 @@ class Entry:
             return "VolumeName"
         elif attr_type == 0xffffffff:
             return "End"
-        # elif b'\xff' in byte:
-        #     return "End"
         return None
 
     @staticmethod
@@ -129,14 +127,13 @@ class Entry:
         self.name = self.attr[offset + 66: offset + 66 + self.attr[offset + 64] * 2].decode('utf-16-le')
 
     def __parse_data(self):
-        if isinstance(self.attr, bytes):
-            print(self.attr[40:48])
-            self.data_allocated_size = int.from_bytes(self.attr[40:48], 'little')
-            self.data_real_size = int.from_bytes(self.attr[48:56], 'little')
-            self.init_size = int.from_bytes(self.attr[56:64], 'little')
+        self.data_allocated_size = int.from_bytes(self.attr[40:48], 'little')
+        self.data_real_size = int.from_bytes(self.attr[48:56], 'little')
+        self.init_size = int.from_bytes(self.attr[56:64], 'little')
 
     def __parse_volume_name(self, offset, length):
-        self.volume_name = self.attr[offset: offset +length].decode('utf-16-le')
+        self.volume_name = self.attr[offset: offset +
+                                     length].decode('utf-16-le')
 
     def add_child(self, entry):
         self.sub_list.append(entry)
@@ -170,12 +167,24 @@ class Entry:
         else:
             size_bytes = self.data_real_size
         size_gb = size_bytes / 1024**3
-        prop = (
-            f"Name: {self.name}\n"
-            f"Attribute: {self.properties}\n"
-            f"Date create: {self.create_time}\n"
-            f"Size: {size_bytes} bytes or {size_gb:.2f} GB\n"
-        )
+        if size_gb < 1:
+            # Nếu kích thước nhỏ hơn 1GB, in ra dưới dạng MB
+            size_mb = size_bytes / 1024**2
+            prop = (
+                f"Name: {self.name}\n"
+                f"Attribute: {self.properties}\n"
+                f"Date create: {self.create_time}\n"
+                f"Last modify: {self.modify_time}\n"
+                f"Size: {size_bytes} bytes or {size_mb:.2f} MB\n"
+            )
+        else:
+            prop = (
+                f"Name: {self.name}\n"
+                f"Attribute: {self.properties}\n"
+                f"Date create: {self.create_time}\n"
+                f"Last modify: {self.modify_time}\n"
+                f"Size: {size_bytes} bytes or {size_gb:.2f} GB\n"
+            )
         return prop
 
 
