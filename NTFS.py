@@ -168,16 +168,23 @@ class Entry:
         return self.str
 
     def get_info(self):
+        if self.is_dir:
+            # Neu la thu muc thi data_real_size se bang tong cua children
+            children_size = sum(child.data_real_size for child in self.sub_list if child.is_using)
+            size_info = f"Size: {children_size}\n"
+        else:
+            size_info = f"Size: {self.data_real_size}\n"
         prop = (
             f"Name: {self.name}\n"
             f"Attribute: {self.properties}\n"
             f"Date create: {self.create_time}\n"
-            f"Size: {self.data_real_size}\n"
+            f"{size_info}"
         )
         return prop
 
 
 class NTFS:
+    
     @staticmethod
     def convert2_complement(num):
         binary = "{:08b}".format(num)
