@@ -21,8 +21,10 @@ class Entry:
             return "Data"
         elif attr_type == 0x60:
             return "VolumeName"
-        elif b'\xff' in byte:
+        elif attr_type == 0xffffffff:
             return "End"
+        # elif b'\xff' in byte:
+        #     return "End"
         return None
 
     @staticmethod
@@ -115,32 +117,26 @@ class Entry:
             self.attr = self.attr[attr_size:]
 
     def __parse_standard_information(self, offset):
-        self.create_time = self.convert_nano_second(
-            self.attr[offset: offset + 8])
-        self.modify_time = self.convert_nano_second(
-            self.attr[offset + 8: offset + 16])
-        self.mft_modify_time = self.convert_nano_second(
-            self.attr[offset + 16: offset + 24])
-        self.access_time = self.convert_nano_second(
-            self.attr[offset + 24: offset + 32])
+        self.create_time = self.convert_nano_second(self.attr[offset: offset + 8])
+        self.modify_time = self.convert_nano_second(self.attr[offset + 8: offset + 16])
+        self.mft_modify_time = self.convert_nano_second(self.attr[offset + 16: offset + 24])
+        self.access_time = self.convert_nano_second(self.attr[offset + 24: offset + 32])
 
     def __parse_file_name(self, offset):
-        self.parent_id = int.from_bytes(
-            self.attr[offset: offset + 6], 'little')
-        self.properties = self.convert_properties(
-            self.attr[offset + 56: offset + 60])
+        self.parent_id = int.from_bytes(self.attr[offset: offset + 6], 'little')
+        self.properties = self.convert_properties(self.attr[offset + 56: offset + 60])
         # attr[64] is length of name
-        self.name = self.attr[offset + 66: offset + 66 +
-                              self.attr[offset + 64] * 2].decode('utf-16-le')
+        self.name = self.attr[offset + 66: offset + 66 + self.attr[offset + 64] * 2].decode('utf-16-le')
 
     def __parse_data(self):
-        self.data_allocated_size = int.from_bytes(self.attr[40:48], 'little')
-        self.data_real_size = int.from_bytes(self.attr[48:56], 'little')
-        self.init_size = int.from_bytes(self.attr[56:64], 'little')
+        if isinstance(self.attr, bytes):
+            print(self.attr[40:48])
+            self.data_allocated_size = int.from_bytes(self.attr[40:48], 'little')
+            self.data_real_size = int.from_bytes(self.attr[48:56], 'little')
+            self.init_size = int.from_bytes(self.attr[56:64], 'little')
 
     def __parse_volume_name(self, offset, length):
-        self.volume_name = self.attr[offset: offset +
-                                     length].decode('utf-16-le')
+        self.volume_name = self.attr[offset: offset +length].decode('utf-16-le')
 
     def add_child(self, entry):
         self.sub_list.append(entry)
@@ -170,15 +166,15 @@ class Entry:
     def get_info(self):
         if self.is_dir:
             # Neu la thu muc thi data_real_size se bang tong cua children
-            children_size = sum(child.data_real_size for child in self.sub_list if child.is_using)
-            size_info = f"Size: {children_size}\n"
+            size_bytes = sum(child.data_real_size for child in self.sub_list if child.is_using)
         else:
-            size_info = f"Size: {self.data_real_size}\n"
+            size_bytes = self.data_real_size
+        size_gb = size_bytes / 1024**3
         prop = (
             f"Name: {self.name}\n"
             f"Attribute: {self.properties}\n"
             f"Date create: {self.create_time}\n"
-            f"{size_info}"
+            f"Size: {size_bytes} bytes or {size_gb:.2f} GB\n"
         )
         return prop
 
@@ -303,6 +299,8 @@ class NTFS:
         return None
 
     def get_info(self):
+        total_bytes = self.number_sector * self.bytes_per_sector
+        total_gb = total_bytes / 1024**3
         prop = (
             f"Bytes per sector: {self.bytes_per_sector}\n"
             f"Sectors per cluster: {self.sector_per_cluster}\n"
@@ -311,6 +309,7 @@ class NTFS:
             f"Number of sectors: {self.number_sector}\n"
             f"MFT cluster: {self.MFT_cluster}\n"
             f"MFT backup cluster: {self.MFT_backup_cluster}\n"
+            f"Size of disk: {total_bytes} bytes or {total_gb:.2f} GB\n"
         )
         return prop
 

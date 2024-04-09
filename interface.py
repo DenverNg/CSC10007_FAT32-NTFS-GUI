@@ -41,7 +41,6 @@ class TreeFrame(ctk.CTkScrollableFrame):
             'html': self.render_picture("./assets/icons/html.png"),
             'jpg': self.render_picture("./assets/icons/jpg.png"),
             'json': self.render_picture("./assets/icons/json.png"),
-            'ppt': self.render_picture("./assets/icons/ppt.png"),
             'audio': self.render_picture("./assets/icons/mp3.png"),
             'video': self.render_picture("./assets/icons/mp4.png"),
             'ppt': self.render_picture("./assets/icons/ppt.png"),
@@ -223,9 +222,7 @@ class InfoFrame(ctk.CTkFrame):
                                       wrap=ctk.WORD, fg_color='transparent',
                                       text_color='black', font=('Source Sans Pro', 20)
                                       )
-
-        self.insert_text('Hello world\n')
-        self.insert_text('Hello world')
+        
         self.clear_text()
         self.textbox.pack(side=ctk.TOP, fill=ctk.BOTH,
                           expand=True, padx=10, pady=10)
