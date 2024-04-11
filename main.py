@@ -10,32 +10,6 @@ import NTFS
 
 from wmi import WMI
 
-def browseFiles():
-    filename = filedialog.askdirectory(initialdir="/", title="Select a Disk")
-
-def convert_size(window, original_size):
-    return floor((window.frameWidth * original_size) / 1600)
-
-def convert_image(window, path, original_width, original_height):
-    original_image = Image.open(path)
-    resized_image = original_image.resize(
-        (convert_size(window, original_width),
-         convert_size(window, original_height))
-    )
-    converted_image = ImageTk.PhotoImage(resized_image)
-    return converted_image
-
-
-def convert_image_from_byte(window, data, original_width, original_height):
-    original_image = Image.open(io.BytesIO(data))
-    resized_image = original_image.resize(
-        (convert_size(window, original_width),
-         convert_size(window, original_height))
-    )
-    converted_image = ImageTk.PhotoImage(resized_image)
-    return converted_image
-
-
 class App(ctk.CTk):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

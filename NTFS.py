@@ -127,9 +127,13 @@ class Entry:
         self.name = self.attr[offset + 66: offset + 66 + self.attr[offset + 64] * 2].decode('utf-16-le')
 
     def __parse_data(self):
-        self.data_allocated_size = int.from_bytes(self.attr[40:48], 'little')
-        self.data_real_size = int.from_bytes(self.attr[48:56], 'little')
-        self.init_size = int.from_bytes(self.attr[56:64], 'little')
+        non_resident = self.attr[8]
+        if not non_resident:
+            self.data_real_size = int.from_bytes(self.attr[16:20], 'little')
+        else:
+            self.data_allocated_size = int.from_bytes(self.attr[40:48], 'little')
+            self.data_real_size = int.from_bytes(self.attr[48:56], 'little')
+            self.init_size = int.from_bytes(self.attr[56:64], 'little')
 
     def __parse_volume_name(self, offset, length):
         self.volume_name = self.attr[offset: offset +
