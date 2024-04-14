@@ -36,6 +36,5 @@ If you're looking to rely on this repo for your school assignments (specifically
 
 - Of course, the bonus part is the most regrettable; if you're using this repo, try to complete the bonus section.
 - Some features I could mention if you're interested (can use APIs without coding): adding files, renaming, opening PNG files, previewing PDF files, etc.
-- The data size of NTFS is flawed. Currently, this section of the code can only read the data size of txt files outside the drive. (if txt files are moved into a folder, errors may occur)
 - The UI is still simple; the blocks in the UI are still stuck together, somewhat lacking in aesthetics.
 - The information section of FAT32 and NTFS could display more complete information, but due to the rush of the project, I overlooked it.
